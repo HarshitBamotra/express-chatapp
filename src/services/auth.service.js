@@ -1,0 +1,19 @@
+class AuthService{
+    constructor(AuthRepo){
+        this.AuthRepo = AuthRepo
+    }
+
+    async register(userData){
+        try{
+            const response = await this.AuthRepo.register(userData);
+
+            return response;
+        }
+        catch(err){
+            console.log(err);
+            throw err;
+        }
+    }
+}
+
+module.exports = AuthService;
