@@ -32,6 +32,41 @@ async function register(req, res, next){
     }
 }
 
+async function login(req, res, next){
+    try{
+        const result = await authService.login(req.body);
+
+        if (result.userNotFound) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                success: false,
+                message: "User not found. Please register first.",
+                err: {},
+                data: null
+            });
+        }
+
+        if (result.invalidPassword) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                success: false,
+                message: "Invalid credentials.",
+                err: {},
+                data: null
+            });
+        }
+
+        return res.status(StatusCodes.OK).json({
+            success: true,
+            message: "Login Successful",
+            err: {},
+            data: result
+        });
+    }
+    catch(err){
+        next(err);
+    }
+}
+
 module.exports = {
-    register
+    register,
+    login
 };

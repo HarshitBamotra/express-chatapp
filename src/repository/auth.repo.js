@@ -26,7 +26,7 @@ class AuthRepo{
                             id: existingUser._id,
                             username: existingUser.username,
                             email: existingUser.email,
-                            profileImage: existingUser.profileImage
+                            profilePhoto: existingUser.profilePhoto
                         },
                         isNewUser: false
                     };
@@ -56,6 +56,38 @@ class AuthRepo{
                     email: user.email,
                 },
                 isNewUser: true
+            };
+        }
+        catch(err){
+            console.log(err);
+            throw new InternalServerError(err);
+        }
+    }
+
+    async login(userData){
+        try{
+            const { email, password } = userData;
+
+            const user = await User.findOne({ email });
+            if (!user) {
+                return { userNotFound: true };
+            }
+
+            const isMatch = await user.comparePassword(password);
+            if (!isMatch) {
+                return { invalidPassword: true };
+            }
+
+            const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7d' });
+
+            return {
+                token,
+                user: {
+                    id: user._id,
+                    username: user.username,
+                    email: user.email,
+                    profilePhoto: user.profilePhoto
+                }
             };
         }
         catch(err){
