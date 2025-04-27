@@ -4,6 +4,8 @@ const cors = require("cors");
 
 const connectToDB = require("./config/db.config");
 const apiRouter = require("./routes");
+const errorHandler = require("./utils/errorHandler");
+const { PORT } = require("./config/server.config");
 
 const app = express();
 
@@ -15,8 +17,16 @@ app.use(cors({
 }));
 
 app.use("/api", apiRouter);
+app.use(errorHandler);
 
-app.listen(3000, ()=>{
-    console.log("server listening on port 3000");
+app.get('/ping', (req, res)=>{
+    return res.json({
+        msg: "Backend is up"
+    });
+});
+
+
+app.listen(PORT, ()=>{
+    console.log(`server listening on port: ${PORT}`);
     connectToDB();
 });

@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const cloudinary = require('cloudinary').v2;
 
 const User = require("../models/user.model");
 const { InternalServerError, NotFound } = require("../errors");
@@ -80,6 +81,9 @@ class AuthRepo{
 
             const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7d' });
 
+            user.status = 'online';
+            await user.save();
+
             return {
                 token,
                 user: {
@@ -89,6 +93,41 @@ class AuthRepo{
                     profilePhoto: user.profilePhoto
                 }
             };
+        }
+        catch(err){
+            console.log(err);
+            throw new InternalServerError(err);
+        }
+    }
+
+    async updateProfile(userId, userData){
+        try{
+            const {username, profilePhotoUrl, profilePhotoName} = userData;
+            
+            const user = await User.findById(userId);
+
+            if(!user){
+                throw new NotFound("User", userId);
+            }
+            
+            if(profilePhotoUrl && profilePhotoName){
+                const prevPhoto = user.profilePhoto?.publicId;
+
+                user.profilePhoto.url = profilePhotoUrl;
+                user.profilePhoto.publicId = profilePhotoName;
+
+                if(prevPhoto){
+                    await cloudinary.uploader.destroy(prevPhoto);
+                }
+            }
+
+            if(username){
+                user.username = username;
+            }
+            
+            await user.save();
+
+            return user;
         }
         catch(err){
             console.log(err);

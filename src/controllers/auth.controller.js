@@ -66,7 +66,30 @@ async function login(req, res, next){
     }
 }
 
+async function updateProfile(req, res, next){
+    try{
+        const userData = {
+            ...req.body,
+            profilePhotoUrl: req.file ? req.file.path : null,
+            profilePhotoName: req.file ? req.file.filename : null
+        }
+        
+        const result = await authService.updateProfile(req.user._id, userData);
+        
+        return res.status(StatusCodes.CREATED).json({
+            success: true,
+            message: "User Updated Successfully",
+            err: {},
+            data: result
+        });
+    }
+    catch(err){
+        next(err);
+    }
+}
+
 module.exports = {
     register,
-    login
+    login,
+    updateProfile
 };
